@@ -1,0 +1,72 @@
+version: '3.9'
+services:
+  mysql:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=PR#20039DIFpeinturium
+      - MARIADB_AUTO_UPGRADE=1
+      - MYSQL_ROOT_HOST=%
+      # - MYSQL_USER=peinturium
+      # - MYSQL_PASSWD=PR#20039DIFpeinturium
+      # - MYSQL_DATABASE=peintirium
+    volumes:
+      - db-conf:/run/mysqld/
+    
+    networks:
+      ps-net:
+        ipv4_address: 10.5.0.4
+
+  
+  prestashop:
+    #image: prestashop/prestashop:1.7-7.3-fpm
+    build: prestashop
+    networks:
+      ps-net:
+        ipv4_address: 10.5.0.5
+
+    volumes:
+      - prestashop-data:/var/www/html
+    
+    depends_on:
+      - mysql
+    environment:
+      - DB_SERVER=10.5.0.4
+      - DB_NAME=peinturium
+      - DB_USER=root
+      - DB_PASSWD=PR#20039DIaFpeinturium
+      - PS_DEV_MODE=0
+      - PS_HOST_MODE=1
+      - PS_INSTALL_AUTO=0
+      - PS_INSTALL_DB=1
+      - PS_LANGUAGE=fr
+      - PS_COUNTRY=FR
+      - PS_ADMIN_FOLDER=hood2205
+      - ADMIN_MAIL=shop@peinturium.com
+      - ADMIN_PASSWD=prest@peinturium2022
+
+  nginx:
+    build: nginx
+    ports:
+      - 80:80
+    depends_on:
+      - prestashop
+    networks:
+      ps-net:
+        ipv4_address: 10.5.0.6
+    volumes:
+      - prestashop-data:/var/www/html
+
+networks:
+  ps-net:
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
+        
+volumes:
+  db-conf:
+
+  prestashop-data:
+  
+  fpm-conf:
+    
